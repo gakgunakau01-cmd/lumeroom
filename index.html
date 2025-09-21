@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumera Social - Decentralized Social Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lumera': {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Header -->
+    <header class="bg-gray-800 shadow-lg border-b border-gray-700">
+        <div class="max-w-6xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-lumera-400 to-lumera-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-share-nodes text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold bg-gradient-to-r from-lumera-400 to-lumera-600 bg-clip-text text-transparent">
+                            Lumera Social
+                        </h1>
+                        <p class="text-xs text-gray-400">Decentralized Social Platform</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="hidden md:flex items-center space-x-2 text-sm text-gray-300">
+                        <i class="fas fa-network-wired text-lumera-400"></i>
+                        <span>Lumera Testnet</span>
+                    </div>
+                    <button id="connectWallet" class="bg-gradient-to-r from-lumera-500 to-lumera-600 hover:from-lumera-600 hover:to-lumera-700 px-6 py-2 rounded-lg font-medium transition-all duration-200 transform hover:scale-105">
+                        <i class="fas fa-wallet mr-2"></i>
+                        Connect Keplr
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-8">
+        <!-- Wallet Status -->
+        <div id="walletStatus" class="hidden mb-6 bg-gray-800 rounded-xl p-4 border border-gray-700">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                    <span class="text-gray-300">Connected:</span>
+                    <span id="walletAddress" class="text-lumera-400 font-mono text-sm"></span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p class="text-xs text-gray-400">Balance</p>
+                        <p class="text-lumera-400 font-bold"><span id="lumeBalance">0.00</span> LUME</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Sidebar -->
+            <div class="lg:col-span-1">
+                <!-- Stats Card -->
+                <div class="bg-gray-800 rounded-xl p-6 mb-6 border border-gray-700">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-chart-line text-lumera-400 mr-2"></i>
+                        Platform Stats
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <h4 class="font-semibold">${post.author}</h4>
+                            <span class="text-xs text-gray-400">${post.address.slice(0, 12)}...${post.address.slice(-6)}</span>
+                            ${post.verified ? '<div class="flex items-center space-x-1"><i class="fas fa-shield-check text-green-400 text-xs"></i><span class="text-xs text-green-400">Verified</span></div>' : ''}
+                            <span class="text-xs text-gray-500">•</span>
+                            <span class="text-xs text-gray-500">${post.timestamp}</span>
+                        </div>
+                        <p class="text-gray-200 mb-4">${post.content}</p>
+                        <div class="bg-gray-700 rounded-lg p-3 mb-4">
+                            <div class="flex items-center space-x-2 text-sm">
+                                <i class="fas fa-brain text-lumera-400"></i>
+                                <span class="text-gray-300">AI Analysis:</span>
+                                <span class="text-green-400">Content Verified ✓</span>
+                                <span class="text-blue-400">Quality Score: ${Math.floor(Math.random() * 20 + 80)}/100</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-sm text-gray-400">
+                            <div class="flex items-center space-x-6">
+                                <button class="flex items-center space-x-2 hover:text-lumera-400 transition-colors" onclick="likePost(this)">
+                                    <i class="fas fa-heart"></i>
+                                    <span>${post.likes}</span>
+                                </button>
+                                <button class="flex items-center space-x-2 hover:text-lumera-400 transition-colors">
+                                    <i class="fas fa-share"></i>
+                                    <span>${post.shares}</span>
+                                </button>
+                                <button class="flex items-center space-x-2 hover:text-lumera-400 transition-colors" onclick="tipPost(this)">
+                                    <i class="fas fa-coins"></i>
+                                    <span>Tip LUME</span>
+                                </button>
+                            </div>
+                            <div class="flex items-center space-x-1 text-green-400">
+                                <i class="fas fa-coins text-xs"></i>
+                                <span class="text-xs font-semibold">+${post.reward.toFixed(1)} LUME</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return postDiv;
+        }
+
+        // Like Post Function
+        function likePost(button) {
+            if (!connectedAccount) {
+                showNotification("Please connect your wallet first", "error");
+                return;
+            }
+            
+            const likeCount = button.querySelector('span');
+            const currentLikes = parseInt(likeCount.textContent);
+            likeCount.textContent = currentLikes + 1;
+            
+            const heart = button.querySelector('i');
+            heart.classList.add('text-red-400');
+            
+            showNotification("Post liked! Author earned 0.1 LUME", "success");
+        }
+
+        // Tip Post Function
+        function tipPost(button) {
+            if (!connectedAccount) {
+                showNotification("Please connect your wallet first", "error");
+                return;
+            }
+            
+            const amount = prompt("Enter LUME amount to tip (e.g., 5.0):");
+            if (amount && !isNaN(amount) && parseFloat(amount) > 0) {
+                showNotification(`Tipping ${amount} LUME to author...`, "info");
+                
+                setTimeout(() => {
+                    showNotification(`Successfully tipped ${amount} LUME!`, "success");
+                }, 2000);
+            }
+        }
+
+        // Show Notification Function
+        function showNotification(message, type = "info") {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-sm transition-all duration-300 transform translate-x-full`;
+            
+            const bgColors = {
+                success: 'bg-green-600',
+                error: 'bg-red-600',
+                info: 'bg-blue-600',
+                warning: 'bg-yellow-600'
+            };
+            
+            const icons = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-circle',
+                info: 'fas fa-info-circle',
+                warning: 'fas fa-exclamation-triangle'
+            };
+            
+            notification.classList.add(bgColors[type]);
+            notification.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <i class="${icons[type]} text-white"></i>
+                    <span class="text-white text-sm font-medium">${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-white hover:text-gray-200 ml-2">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => notification.remove(), 300);
+            }, 5000);
+        }
+
+        // Simulate real-time updates
+        function simulateRealTimeUpdates() {
+            setInterval(() => {
+                // Update some stats randomly
+                const elements = [
+                    { selector: 'div:contains("Total Posts")', increment: Math.random() < 0.3 },
+                    { selector: 'div:contains("Active Users")', increment: Math.random() < 0.2 },
+                    { selector: 'div:contains("LUME Rewarded")', increment: Math.random() < 0.4 }
+                ];
+                
+                // Simulate network activity
+                const indicators = document.querySelectorAll('.animate-pulse');
+                indicators.forEach(indicator => {
+                    indicator.style.animationDuration = `${Math.random() * 2 + 1}s`;
+                });
+            }, 10000);
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Connect Wallet Button
+            document.getElementById('connectWallet').addEventListener('click', connectKeplrWallet);
+            
+            // Publish Post Button
+            document.getElementById('publishPost').addEventListener('click', publishPost);
+            
+            // Post Content Textarea
+            document.getElementById('postContent').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                    publishPost();
+                }
+            });
+            
+            // Image Upload
+            document.getElementById('imageUpload').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    showNotification(`Image "${file.name}" ready for upload`, "success");
+                }
+            });
+            
+            // Start real-time updates
+            simulateRealTimeUpdates();
+            
+            // Check if Keplr is available
+            if (!window.keplr) {
+                showNotification("Keplr wallet extension not found. Please install Keplr to use this dApp.", "warning");
+            }
+        });
+
+        // Handle Keplr account changes
+        window.addEventListener('keplr_keystorechange', () => {
+            if (connectedAccount) {
+                showNotification("Wallet account changed. Please reconnect.", "info");
+                connectedAccount = null;
+                document.getElementById('walletStatus').classList.add('hidden');
+                document.getElementById('connectWallet').innerHTML = 
+                    '<i class="fas fa-wallet mr-2"></i>Connect Keplr';
+                document.getElementById('connectWallet').classList.remove('bg-green-600', 'hover:bg-green-700');
+            }
+        });
+
+        // Handle window resize for responsive design
+        window.addEventListener('resize', function() {
+            // Adjust layout for mobile
+            const isMobile = window.innerWidth < 768;
+            const sidebar = document.querySelector('.lg\\:col-span-1');
+            const feed = document.querySelector('.lg\\:col-span-2');
+            
+            if (isMobile) {
+                sidebar?.classList.add('order-2');
+                feed?.classList.add('order-1');
+            } else {
+                sidebar?.classList.remove('order-2');
+                feed?.classList.remove('order-1');
+            }
+        });
+
+        // Simulate network status monitoring
+        function monitorNetworkStatus() {
+            const checkNetwork = async () => {
+                try {
+                    const response = await fetch('https://lumera-testnet-rpc.linknode.org/status');
+                    const data = await response.json();
+                    
+                    // Update network status indicator
+                    const indicators = document.querySelectorAll('.bg-green-400');
+                    indicators.forEach(indicator => {
+                        indicator.classList.remove('bg-red-400');
+                        indicator.classList.add('bg-green-400');
+                    });
+                } catch (error) {
+                    // Show network error
+                    const indicators = document.querySelectorAll('.bg-green-400');
+                    indicators.forEach(indicator => {
+                        indicator.classList.remove('bg-green-400');
+                        indicator.classList.add('bg-red-400');
+                    });
+                    console.error('Network connection error:', error);
+                }
+            };
+            
+            checkNetwork();
+            setInterval(checkNetwork, 30000); // Check every 30 seconds
+        }
+
+        // Initialize network monitoring
+        monitorNetworkStatus();
+
+        // Add some Easter eggs for fun
+        let konamiCode = [];
+        const konamiSequence = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
+        
+        document.addEventListener('keydown', function(e) {
+            konamiCode.push(e.keyCode);
+            if (konamiCode.length > konamiSequence.length) {
+                konamiCode = konamiCode.slice(-konamiSequence.length);
+            }
+            
+            if (JSON.stringify(konamiCode) === JSON.stringify(konamiSequence)) {
+                showNotification("🚀 Secret Lumera mode activated! You found the Easter egg!", "success");
+                document.body.style.background = 'linear-gradient(45deg, #0ea5e9, #8b5cf6, #ec4899)';
+                document.body.style.backgroundSize = '400% 400%';
+                document.body.style.animation = 'gradient 15s ease infinite';
+                
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes gradient {
+                        0% { background-position: 0% 50%; }
+                        50% { background-position: 100% 50%; }
+                        100% { background-position: 0% 50%; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        });
+    </script>
+</body>
+</html>flex justify-between">
+                            <span class="text-gray-400">Total Posts</span>
+                            <span class="text-white font-semibold">1,247</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Active Users</span>
+                            <span class="text-white font-semibold">3,459</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">LUME Rewarded</span>
+                            <span class="text-lumera-400 font-semibold">127,890 LUME</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">AI Verified</span>
+                            <span class="text-green-400 font-semibold">98.7%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trending Topics -->
+                <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-fire text-orange-400 mr-2"></i>
+                        Trending
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded-lg cursor-pointer transition-colors">
+                            <span class="text-lumera-400">#</span>
+                            <span>LumeraAI</span>
+                            <span class="text-xs text-gray-400 ml-auto">2.1K posts</span>
+                        </div>
+                        <div class="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded-lg cursor-pointer transition-colors">
+                            <span class="text-lumera-400">#</span>
+                            <span>DeFiLife</span>
+                            <span class="text-xs text-gray-400 ml-auto">1.8K posts</span>
+                        </div>
+                        <div class="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded-lg cursor-pointer transition-colors">
+                            <span class="text-lumera-400">#</span>
+                            <span>CosmosDev</span>
+                            <span class="text-xs text-gray-400 ml-auto">956 posts</span>
+                        </div>
+                        <div class="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded-lg cursor-pointer transition-colors">
+                            <span class="text-lumera-400">#</span>
+                            <span>Web3Social</span>
+                            <span class="text-xs text-gray-400 ml-auto">743 posts</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Feed -->
+            <div class="lg:col-span-2">
+                <!-- Create Post -->
+                <div class="bg-gray-800 rounded-xl p-6 mb-6 border border-gray-700">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-lumera-400 to-lumera-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <textarea 
+                                id="postContent" 
+                                placeholder="What's happening on Lumera today?" 
+                                class="w-full bg-gray-700 border border-gray-600 rounded-lg p-4 text-white placeholder-gray-400 resize-none focus:outline-none focus:border-lumera-400 focus:ring-2 focus:ring-lumera-400/20"
+                                rows="3"
+                            ></textarea>
+                            <div class="flex items-center justify-between mt-4">
+                                <div class="flex items-center space-x-4 text-sm text-gray-400">
+                                    <label class="flex items-center space-x-2 cursor-pointer hover:text-lumera-400 transition-colors">
+                                        <input type="file" class="hidden" accept="image/*" id="imageUpload">
+                                        <i class="fas fa-image"></i>
+                                        <span>Photo</span>
+                                    </label>
+                                    <div class="flex items-center space-x-1">
+                                        <i class="fas fa-shield-check text-green-400"></i>
+                                        <span class="text-green-400">AI Verified</span>
+                                    </div>
+                                </div>
+                                <button id="publishPost" class="bg-gradient-to-r from-lumera-500 to-lumera-600 hover:from-lumera-600 hover:to-lumera-700 px-6 py-2 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <i class="fas fa-paper-plane mr-2"></i>
+                                    Publish
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Posts Feed -->
+                <div id="postsFeed" class="space-y-6">
+                    <!-- Sample Post 1 -->
+                    <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-gray-600 transition-colors">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user-astronaut text-white"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <h4 class="font-semibold">CosmosBuilder</h4>
+                                    <span class="text-xs text-gray-400">lumera1xyz...789</span>
+                                    <div class="flex items-center space-x-1">
+                                        <i class="fas fa-shield-check text-green-400 text-xs"></i>
+                                        <span class="text-xs text-green-400">Verified</span>
+                                    </div>
+                                    <span class="text-xs text-gray-500">•</span>
+                                    <span class="text-xs text-gray-500">2h ago</span>
+                                </div>
+                                <p class="text-gray-200 mb-4">
+                                    Just deployed my first smart contract on Lumera! 🚀 The AI integration possibilities are endless. The Sense feature for content verification is a game-changer! #LumeraAI #Web3
+                                </p>
+                                <div class="flex items-center justify-between text-sm text-gray-400">
+                                    <div class="flex items-center space-x-6">
+                                        <button class="flex items-center space-x-2 hover:text-lumera-400 transition-colors">
+                                            <i class="fas fa-heart"></i>
+                                            <span>24</span>
+                                        </button>
+                                        <button class="flex items-center space-x-2 hover:text-lumera-400 transition-colors">
+                                            <i class="fas fa-share"></i>
+                                            <span>8</span>
+                                        </button>
+                                        <button class="flex items-center space-x-2 hover:text-lumera-400 transition-colors">
+                                            <i class="fas fa-coins"></i>
+                                            <span>Tip LUME</span>
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center space-x-1 text-green-400">
+                                        <i class="fas fa-coins text-xs"></i>
+                                        <span class="text-xs font-semibold">+2.5 LUME</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sample Post 2 -->
+                    <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-gray-600 transition-colors">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center">
+                                <i class="fas fa-leaf text-white"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <h4 class="font-semibold">AIEnthusiast</h4>
+                                    <span class="text-xs text-gray-400">lumera1abc...456</span>
+                                    <div class="flex items-center space-x-1">
+                                        <i class="fas fa-shield-check text-green-400 text-xs"></i>
+                                        <span class="text-xs text-green-400">Verified</span>
+                                    </div>
+                                    <span class="text-xs text-gray-500">•</span>
+                                    <span class="text-xs text-gray-500">4h ago</span>
+                                </div>
+                                <p class="text-gray-200 mb-4">
+                                    The future of social media is here! Lumera's decentralized approach with AI verification ensures authenticity while rewarding quality content. This is what Web3 social should be! 💎
+                                </p>
+                                <div class="bg-gray-700 rounded-lg p-3 mb-4">
+                                    <div class="flex items-center space-x-2 text-sm">
+                                        <i class="fas fa-brain text-lumera-400"></i>
+                                        <span class="text-gray-300">AI Analysis:</span>
+                                        <span class="text-green-400">Content Verified ✓</span>
+                                        <span class="text-blue-400">Quality Score: 92/100</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between text-sm text-gray-400">
+                                    <div class="flex items-center space-x-6">
+                                        <button class="flex items-center space-x-2 hover:text-lumera-400 transition-colors">
+                                            <i class="fas fa-heart text-red-400"></i>
+                                            <span>47</span>
+                                        </button>
+                                        <button class="flex items-center space-x-2 hover:text-lumera-400 transition-colors">
+                                            <i class="fas fa-share"></i>
+                                            <span>15</span>
+                                        </button>
+                                        <button class="flex items-center space-x-2 hover:text-lumera-400 transition-colors">
+                                            <i class="fas fa-coins"></i>
+                                            <span>Tip LUME</span>
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center space-x-1 text-green-400">
+                                        <i class="fas fa-coins text-xs"></i>
+                                        <span class="text-xs font-semibold">+4.7 LUME</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sample Post 3 -->
+                    <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-gray-600 transition-colors">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center">
+                                <i class="fas fa-rocket text-white"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <h4 class="font-semibold">DevMaster</h4>
+                                    <span class="text-xs text-gray-400">lumera1def...123</span>
+                                    <div class="flex items-center space-x-1">
+                                        <i class="fas fa-shield-check text-green-400 text-xs"></i>
+                                        <span class="text-xs text-green-400">Verified</span>
+                                    </div>
+                                    <span class="text-xs text-gray-500">•</span>
+                                    <span class="text-xs text-gray-500">6h ago</span>
+                                </div>
+                                <p class="text-gray-200 mb-4">
+                                    Building on Lumera has been an incredible experience. The combination of Cosmos SDK flexibility with native AI modules creates endless possibilities. Here's a quick demo of my latest dApp! 🔥
+                                </p>
+                                <div class="bg-gradient-to-r from-gray-700 to-gray-600 rounded-lg p-4 mb-4 border border-gray-600">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-lumera-500 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-code text-white"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="font-semibold text-white">LumeraSwap dApp</h5>
+                                            <p class="text-xs text-gray-400">Decentralized exchange with AI-powered trading insights</p>
+                                        </div>
+                                        <button class="ml-auto bg-lumera-500 hover:bg-lumera-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                            Try Demo
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between text-sm text-gray-400">
+                                    <div class="flex items-center space-x-6">
+                                        <button class="flex items-center space-x-2 hover:text-lumera-400 transition-colors">
+                                            <i class="fas fa-heart"></i>
+                                            <span>89</span>
+                                        </button>
+                                        <button class="flex items-center space-x-2 hover:text-lumera-400 transition-colors">
+                                            <i class="fas fa-share"></i>
+                                            <span>23</span>
+                                        </button>
+                                        <button class="flex items-center space-x-2 hover:text-lumera-400 transition-colors">
+                                            <i class="fas fa-coins"></i>
+                                            <span>Tip LUME</span>
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center space-x-1 text-green-400">
+                                        <i class="fas fa-coins text-xs"></i>
+                                        <span class="text-xs font-semibold">+8.9 LUME</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 border-t border-gray-700 py-8 mt-16">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="font-semibold mb-4 text-lumera-400">Lumera Social</h3>
+                    <p class="text-sm text-gray-400">Decentralized social platform powered by AI on Lumera Protocol</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Features</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li>AI Content Verification</li>
+                        <li>Post & Earn LUME</li>
+                        <li>Decentralized Storage</li>
+                        <li>Cross-chain Integration</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Resources</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="https://lumera.io" class="hover:text-lumera-400 transition-colors">Lumera Protocol</a></li>
+                        <li><a href="https://faucet-lumera.winnode.xyz/" class="hover:text-lumera-400 transition-colors">Testnet Faucet</a></li>
+                        <li><a href="https://testnet.lumera.exploreme.pro/" class="hover:text-lumera-400 transition-colors">Block Explorer</a></li>
+                        <li><a href="https://docs.keplr.app/" class="hover:text-lumera-400 transition-colors">Keplr Wallet</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Network</h4>
+                    <div class="space-y-2 text-sm text-gray-400">
+                        <p>Chain: lumera-testnet-2</p>
+                        <p>RPC: linknode.org</p>
+                        <p>Denom: ulume</p>
+                        <div class="flex items-center space-x-2 mt-4">
+                            <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                            <span class="text-green-400 text-xs">Testnet Active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-sm text-gray-400">
+                <p>&copy; 2025 Lumera Social. Built for Lumera Protocol Ecosystem.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Keplr Wallet Integration
+        let connectedAccount = null;
+        let keplr = null;
+
+        // Network Configuration for Lumera Testnet
+        const lumeraTestnetConfig = {
+            chainId: "lumera-testnet-2",
+            chainName: "Lumera Testnet",
+            rpc: "https://lumera-testnet-rpc.linknode.org/",
+            rest: "https://lumera-testnet-api.linknode.org/",
+            bip44: {
+                coinType: 118,
+            },
+            bech32Config: {
+                bech32PrefixAccAddr: "lumera",
+                bech32PrefixAccPub: "lumerapub",
+                bech32PrefixValAddr: "lumeravaloper",
+                bech32PrefixValPub: "lumeravaloperpub",
+                bech32PrefixConsAddr: "lumeravalcons",
+                bech32PrefixConsPub: "lumeravalconspub",
+            },
+            currencies: [
+                {
+                    coinDenom: "LUME",
+                    coinMinimalDenom: "ulume",
+                    coinDecimals: 6,
+                },
+            ],
+            feeCurrencies: [
+                {
+                    coinDenom: "LUME",
+                    coinMinimalDenom: "ulume",
+                    coinDecimals: 6,
+                    gasPriceStep: {
+                        low: 0.01,
+                        average: 0.025,
+                        high: 0.03,
+                    },
+                },
+            ],
+            stakeCurrency: {
+                coinDenom: "LUME",
+                coinMinimalDenom: "ulume",
+                coinDecimals: 6,
+            },
+        };
+
+        // Connect Wallet Function
+        async function connectKeplrWallet() {
+            try {
+                if (!window.keplr) {
+                    throw new Error("Keplr wallet not found. Please install Keplr extension.");
+                }
+
+                // Suggest chain to Keplr
+                await window.keplr.experimentalSuggestChain(lumeraTestnetConfig);
+                
+                // Enable chain
+                await window.keplr.enable(lumeraTestnetConfig.chainId);
+                
+                // Get offline signer
+                const offlineSigner = window.getOfflineSigner(lumeraTestnetConfig.chainId);
+                const accounts = await offlineSigner.getAccounts();
+                
+                if (accounts.length > 0) {
+                    connectedAccount = accounts[0];
+                    updateWalletUI();
+                    showNotification("Wallet connected successfully!", "success");
+                }
+            } catch (error) {
+                console.error("Error connecting to Keplr:", error);
+                showNotification(error.message || "Failed to connect wallet", "error");
+            }
+        }
+
+        // Update Wallet UI
+        function updateWalletUI() {
+            if (connectedAccount) {
+                document.getElementById('walletStatus').classList.remove('hidden');
+                document.getElementById('walletAddress').textContent = 
+                    connectedAccount.address.slice(0, 12) + '...' + connectedAccount.address.slice(-6);
+                document.getElementById('connectWallet').innerHTML = 
+                    '<i class="fas fa-check-circle mr-2"></i>Connected';
+                document.getElementById('connectWallet').classList.add('bg-green-600', 'hover:bg-green-700');
+                
+                // Simulate balance (in real app, query from chain)
+                setTimeout(() => {
+                    document.getElementById('lumeBalance').textContent = '127.456';
+                }, 1000);
+            }
+        }
+
+        // Publish Post Function
+        function publishPost() {
+            const content = document.getElementById('postContent').value.trim();
+            if (!content) {
+                showNotification("Please enter some content", "error");
+                return;
+            }
+            
+            if (!connectedAccount) {
+                showNotification("Please connect your wallet first", "error");
+                return;
+            }
+
+            // Simulate AI content verification
+            showNotification("AI is verifying your content...", "info");
+            
+            setTimeout(() => {
+                // Create new post element
+                const newPost = createPostElement({
+                    author: "You",
+                    address: connectedAccount.address,
+                    content: content,
+                    timestamp: "now",
+                    likes: 0,
+                    shares: 0,
+                    reward: Math.random() * 5 + 1, // Random reward 1-6 LUME
+                    verified: true
+                });
+                
+                // Add to feed
+                const feed = document.getElementById('postsFeed');
+                feed.insertBefore(newPost, feed.firstChild);
+                
+                // Clear input
+                document.getElementById('postContent').value = '';
+                
+                showNotification("Post published and verified! You earned LUME tokens!", "success");
+            }, 2000);
+        }
+
+        // Create Post Element
+        function createPostElement(post) {
+            const postDiv = document.createElement('div');
+            postDiv.className = 'bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-gray-600 transition-colors';
+            
+            postDiv.innerHTML = `
+                <div class="flex items-start space-x-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-lumera-400 to-lumera-600 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="
